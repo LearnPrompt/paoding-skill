@@ -11,7 +11,7 @@
     {
       "name": "paoding",
       "description": "庖丁 | Paoding — 零API博主打法蒸馏:把任何博主(包括你自己)的爆款打法解牛成四层结构(选题/结构/表达/认知),蒸馏成可截图的《打法谱》+可安装的内容教练Skill。零Key零成本,料由你喂。",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "LearnPrompt",
         "url": "https://github.com/LearnPrompt"
