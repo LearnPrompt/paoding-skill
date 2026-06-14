@@ -69,8 +69,8 @@ fi
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
-# 组装 yt-dlp 参数
-yt_args=(-x --audio-format mp3 --no-playlist -o "S%(autonumber)02d-%(title).60s.%(ext)s")
+# 组装 yt-dlp 参数(--write-info-json 顺手存元数据,里面常带赞/评/转/藏)
+yt_args=(-x --audio-format mp3 --no-playlist --write-info-json -o "S%(autonumber)02d-%(title).60s.%(ext)s")
 [[ -n "$BROWSER" ]] && yt_args+=(--cookies-from-browser "$BROWSER")
 
 echo "▶ 下载音轨(仅此一条)…"
@@ -102,10 +102,30 @@ fi
 
 if [[ ! -s "$txt" ]]; then echo "✗ 转写没出文字,可能纯音乐/口音重。音轨在 $OUTDIR/$mp3,可换 --model small 重试或人工校。" >&2; exit 5; fi
 
+# 互动数:从 info.json 抽赞/评/转/藏(抖音/B站常有;小红书提取器拿不到,会显示"—")
+info="${mp3%.mp3}.info.json"
+stat_line=""
+if [[ -s "$info" ]] && command -v python3 >/dev/null 2>&1; then
+  stat_line="$(python3 - "$info" <<'PY' 2>/dev/null
+import json,sys
+d=json.load(open(sys.argv[1]))
+g=lambda k:d.get(k)
+def f(v):return '—' if v in (None,0) else v
+print('赞:%s 评:%s 转:%s 藏:%s 发布:%s 作者:%s'%(
+ f(g('like_count')),f(g('comment_count')),f(g('repost_count')),
+ f(g('save_count')),f(g('upload_date')),f(g('uploader') or g('uploader_id'))))
+PY
+)"
+fi
+
 echo ""
 echo "✅ 收料完成:"
 echo "   音轨:$OUTDIR/$mp3"
 echo "   逐字稿:$OUTDIR/$txt"
+[[ -n "$stat_line" ]] && echo "   互动数:$stat_line"
 echo ""
 echo "把逐字稿喂回庖丁案板,标注「口播转写,可能有误」,继续观全牛→解牛。"
 echo "提醒:whisper/base 对口音、专有名词会出错——关键术语以截图/标题为准。"
+if [[ "$stat_line" == *"评:—"* || -z "$stat_line" ]]; then
+  echo "⚠ 这条没抓到互动数/评论数(小红书 yt-dlp 给不了)。要做高赞↔翻车对照、读评论区需求,请补:笔记页截图(含赞/藏/评)+ 评论区截图——庖丁用视觉读,零API、不硬抓。"
+fi
