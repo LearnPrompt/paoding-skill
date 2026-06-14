@@ -31,12 +31,25 @@ if [[ -z "$URL" || "$URL" == --* ]]; then
   exit 2
 fi
 
+# 短链预解析:b23.tv 这类跳转短链,yt-dlp 的 generic 提取器解不开会 412。
+# 先用 curl 跟随跳转拿到真实长链,再交给后面的平台识别。
+case "$URL" in
+  *b23.tv*|*v.douyin.com*)
+    resolved="$(curl -sIL "$URL" -o /dev/null -w '%{url_effective}' 2>/dev/null || true)"
+    if [[ -n "$resolved" && "$resolved" != "$URL" ]]; then
+      echo "▶ 短链解析:$URL"
+      echo "          → $resolved"
+      URL="$resolved"
+    fi ;;
+esac
+
 # 平台识别 + 登录墙判定
-need_cookies=0
+need_cookies=0   # 1=没登录态根本拿不到(小红书/抖音)
+soft_cookies=0   # 1=公开可看但风控常要登录态过(B站 412)
 case "$URL" in
   *xiaohongshu.com*|*xhslink*)   plat="小红书"; need_cookies=1 ;;
   *douyin.com*|*iesdouyin*)      plat="抖音";   need_cookies=1 ;;
-  *bilibili.com*|*b23.tv*)       plat="B站" ;;
+  *bilibili.com*|*b23.tv*)       plat="B站"; soft_cookies=1 ;;
   *x.com*|*twitter.com*)         plat="X" ;;
   *youtube.com*|*youtu.be*)      plat="YouTube" ;;
   *)                             plat="其他(yt-dlp 自适配)" ;;
@@ -44,9 +57,13 @@ esac
 
 echo "▶ 平台:$plat"
 if [[ "$need_cookies" == 1 && -z "$BROWSER" ]]; then
-  echo "⚠ $plat 需登录态。请加 --browser safari(或 chrome/edge/firefox),庖丁会借用你自己浏览器里已登录的会话。" >&2
-  echo "  例:bash collect.sh \"$URL\" $OUTDIR --browser safari" >&2
+  echo "⚠ $plat 需登录态。请加 --browser chrome(或 edge/firefox/safari),庖丁会借用你自己浏览器里已登录的会话。" >&2
+  echo "  例:bash collect.sh \"$URL\" $OUTDIR --browser chrome" >&2
+  echo "  提示:macOS 上 Safari 的 cookie 受沙箱保护(报 Operation not permitted),优先用 Chrome;非用 Safari 不可则给终端开「完全磁盘访问」。" >&2
   exit 3
+fi
+if [[ "$soft_cookies" == 1 && -z "$BROWSER" ]]; then
+  echo "ℹ $plat 公开可看,但常有风控(412)。如果下面下载失败,加 --browser chrome 借登录态重试即可。" >&2
 fi
 
 mkdir -p "$OUTDIR"
@@ -58,8 +75,10 @@ yt_args=(-x --audio-format mp3 --no-playlist -o "S%(autonumber)02d-%(title).60s.
 
 echo "▶ 下载音轨(仅此一条)…"
 if ! yt-dlp "${yt_args[@]}" "$URL"; then
-  echo "✗ 下载失败。常见原因:链接需登录(加 --browser)、内容已删、或该平台 yt-dlp 暂不支持。" >&2
-  echo "  庖丁不硬抓——请改用浏览器把视频另存到本地,再喂文件进来。" >&2
+  echo "✗ 下载失败。常见原因与对策:" >&2
+  echo "  · HTTP 412 / 风控(B站常见):加 --browser chrome 借登录态重试;并确保 yt-dlp 是新版(pip install -U yt-dlp)。" >&2
+  echo "  · 需登录(小红书/抖音):加 --browser chrome。" >&2
+  echo "  · 内容已删 / 平台不支持:庖丁不硬抓——请用浏览器把视频另存到本地,再喂文件进来。" >&2
   exit 4
 fi
 
