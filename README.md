@@ -17,18 +17,6 @@
 
 ---
 
-## 它解决什么问题
-
-事情是这样的。
-
-你翻了对标博主 50 条笔记,感觉"他是挺会写的",但要你说清楚他**为什么**爆——开头是什么型、人设是什么声音、底层是哪套心智模型——你说不出来。
-
-你让 AI 模仿他写一篇,出来的东西泛泛的,因为 AI 也没见过他的内容,只是在演"一个博主"。
-
-市面上的蒸馏工具能自动采集,但要配付费 API、按条数算钱,而且只覆盖一两个平台。
-
-庖丁换了个思路:**料你来喂,牛它来解。** 你把博主的笔记复制/截图/贴链接给它(8 条起),它沿四层肌理拆开——选题层、结构层、表达层、认知层——每个结论都挂着样本原文做证据,最后交两件东西:一份可截图的《打法谱》,和一个可安装的 `<博主名>-coach` Skill,从此你写东西时它就在场边按那套打法盯你。
-
 ## 快速开始
 
 ```bash
@@ -42,6 +30,18 @@ npx skills add LearnPrompt/paoding-skill -g
 ```
 
 没有现成材料?直接说"用庖丁拆解博主XX",它会先给你一张**料单**——告诉你去复制哪几类笔记、各要几条,贴回来就开工。
+
+## 它解决什么问题
+
+事情是这样的。
+
+你翻了对标博主 50 条笔记,感觉"他是挺会写的",但要你说清楚他**为什么**爆——开头是什么型、人设是什么声音、底层是哪套心智模型——你说不出来。
+
+你让 AI 模仿他写一篇,出来的东西泛泛的,因为 AI 也没见过他的内容,只是在演"一个博主"。
+
+市面上的蒸馏工具能自动采集,但要配付费 API、按条数算钱,而且只覆盖一两个平台。
+
+庖丁换了个思路:**料你来喂,牛它来解。** 你把博主的笔记复制/截图/贴链接给它(8 条起),它沿四层肌理拆开——选题层、结构层、表达层、认知层——每个结论都挂着样本原文做证据,最后交两件东西:一份可截图的《打法谱》,和一个可安装的 `<博主名>-coach` Skill,从此你写东西时它就在场边按那套打法盯你。
 
 ## 怎么喂料
 
@@ -145,6 +145,6 @@ paoding-skill/
 
 [鲁班·Skill打磨](https://github.com/LearnPrompt/luban-skill) · [庖丁·博主蒸馏](https://github.com/LearnPrompt/paoding-skill) · [蔡伦·对话造纸](https://github.com/LearnPrompt/cailun-skill) · [阿福·LLM Todo](https://github.com/LearnPrompt/afu-llm-todo) · [AI雷达·零API资讯](https://github.com/LearnPrompt/ai-news-radar) · [淘金小镇·ClawHub日榜](https://github.com/LearnPrompt/skillrush-town) · [Irasutoya·正文配图](https://github.com/LearnPrompt/carl-irasutoya-illustrations) · [Humanize PPT·简报编排](https://github.com/LearnPrompt/humanize-ppt) · [CC Harness·六件套](https://github.com/LearnPrompt/cc-harness-skills)
 
-<sub>公众号「卡尔的AI沃茨」 · [X @aiwarts](https://x.com/aiwarts) · [learnprompt.pro](https://www.learnprompt.pro)</sub>
+<sub>公众号「卡尔的AI沃茨」 · X @aiwarts · <a href="https://learnprompt.pro/workshop/">learnprompt.pro/workshop</a></sub>
 
 </div>
