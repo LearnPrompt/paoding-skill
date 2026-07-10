@@ -75,12 +75,36 @@ npx skills add LearnPrompt/paoding-skill -g
 
 | | API 采集式蒸馏工具 | **庖丁** |
 |---|---|---|
-| 数据来源 | 付费 API 自动采集 | 用户喂料(粘贴/截图/公开链接) |
-| 成本 | API 按量计费 + 配置 | 零 |
+| 数据来源 | 付费 API 自动采集 | 默认用户喂料(粘贴/截图/公开链接);**开刃模式**可选接 TikHub(小红书/抖音)+ SocialData(X)自动采集 |
+| 成本 | API 按量计费 + 配置 | 默认零;开刃模式按量(约 $0.002/请求,采 10 条 ≈ ¥0.15),脚本内置 ¥5 硬上限 |
 | 平台覆盖 | 接了哪个平台算哪个 | 料能喂进来的都行 |
 | 证据链 | 统计为主 | 每条结论挂样本编号+原文引用 |
 | 产出 | 拆解报告 | 打法谱 + **可安装的教练 Skill** + 试刀盲评 |
 | 合规面 | 依赖采集方条款 | 不采集,只研究你提供的公开内容 |
+
+## 开刃模式(可选)
+
+默认路径永远零 API。但如果你本来就持有 TikHub 或 SocialData 的 key,可以给庖丁「开刃」——自动采集互动数全量和评论区(认知层拆解的重要料):
+
+```bash
+mkdir -p ~/.config/paoding
+cat > ~/.config/paoding/keys.env <<'EOF'
+TIKHUB_API_KEY=你的key
+SOCIALDATA_API_KEY=你的key
+EOF
+chmod 600 ~/.config/paoding/keys.env
+```
+
+TikHub(api.tikhub.io)管小红书/抖音,SocialData(socialdata.tools)管 X,两个 key 配一个也行。配好后庖丁收料时会自动检测并询问是否用 API 采集;也可手动跑:
+
+```bash
+python3 skills/paoding/scripts/collect_api.py --platform xhs --user "博主名" --count 10 --outdir ./paoding-collect
+```
+
+- 费用量级:约 $0.002/请求,一条样本约 2 次请求(详情+评论),采 10 条 ≈ ¥0.15;
+- 脚本每次采集前查余额、打印预估费用并要求确认;`--yes` 跳过交互确认(自动化场景用);
+- 内置单次运行 ¥5 硬上限,超限自动停手,已采样本保留;
+- key 只住在本地 keys.env(600 权限),不进产物、不进日志。没配 key?一切照旧,零 API 路径不受任何影响。
 
 ## 触发方式
 
@@ -103,6 +127,7 @@ npx skills add LearnPrompt/paoding-skill -g
 paoding-skill/
 ├── skills/paoding/
 │   ├── SKILL.md          # 解牛工作流:收料→观全牛→解牛(四层)→成谱→试刀→回锅
+│   ├── scripts/          # collect.sh(零API代收)+ collect_api.py(开刃模式,可选)
 │   └── examples/         # 实战案例(蒸馏过程与产出样例)
 ├── assets/               # demo 与可复现录制脚本
 ├── .claude-plugin/       # Claude Code plugin marketplace 清单
