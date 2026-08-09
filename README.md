@@ -9,7 +9,7 @@
 [![零API](https://img.shields.io/badge/%E9%9B%B6API-%E9%9B%B6Key%C2%B7%E9%9B%B6%E6%88%90%E6%9C%AC-green)](#为什么是零api)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**把任何博主(包括你自己)的爆款打法,解牛成四层结构,蒸馏成可装进你 AI 的内容教练。零API、零Key、零采集成本。**
+**把任何博主(包括你自己)的爆款打法,解牛成四层结构,蒸馏成可装进你 AI 的内容教练。默认零 API;需要自动化时可开刃接 TikHub + 本地 Whisper。**
 
 [它解决什么问题](#它解决什么问题) · [安装](#快速开始) · [怎么喂料](#怎么喂料) · [它和同类有什么不同](#它和同类有什么不同) · [安全边界](#安全边界)
 
@@ -41,7 +41,7 @@ npx skills add LearnPrompt/paoding-skill -g
 
 市面上的蒸馏工具能自动采集,但要配付费 API、按条数算钱,而且只覆盖一两个平台。
 
-庖丁换了个思路:**料你来喂,牛它来解。** 你把博主的笔记复制/截图/贴链接给它(8 条起),它沿四层肌理拆开——选题层、结构层、表达层、认知层——每个结论都挂着样本原文做证据,最后交两件东西:一份可截图的《打法谱》,和一个可安装的 `<博主名>-coach` Skill,从此你写东西时它就在场边按那套打法盯你。
+庖丁换了个思路:**料先落到本地,牛再沿证据解。** 你可以复制/截图/贴链接(8 条起),也可以用自己的 TikHub key 自动采集公开笔记、互动数和评论,再把视频交给本地 Whisper。庖丁沿四层肌理拆开——选题层、结构层、表达层、认知层——每个结论都挂着样本原文做证据,最后交两件东西:一份可截图的《打法谱》,和一个可安装的 `<博主名>-coach` Skill。
 
 ## 怎么喂料
 
@@ -66,25 +66,25 @@ npx skills add LearnPrompt/paoding-skill -g
 
 ## 为什么是零API
 
-- **零成本**:不接 TikHub 等付费采集接口,蒸馏一个博主 0 元;
+- **默认零成本**:不开刃时不接 TikHub 等付费采集接口,蒸馏一个博主 0 元;
 - **零风控风险**:不模拟登录、不爬需登录内容、不碰平台加密接口;
 - **全平台**:料是你喂的,所以公众号、博客、X、小红书截图、B站文稿……什么平台都解;
-- **代价也说清楚**:你要自己花 10 分钟复制材料。自动采集的便利,换来的是成本、配置和合规风险——庖丁选了另一边。
+- **选择权说清楚**:默认路径需要自己整理材料;想换取自动采集的便利,再由用户显式启用开刃模式并承担 API 成本。
 
 ## 它和同类有什么不同
 
 | | API 采集式蒸馏工具 | **庖丁** |
 |---|---|---|
 | 数据来源 | 付费 API 自动采集 | 默认用户喂料(粘贴/截图/公开链接);**开刃模式**可选接 TikHub(小红书/抖音)+ SocialData(X)自动采集 |
-| 成本 | API 按量计费 + 配置 | 默认零;开刃模式按量(约 $0.002/请求,采 10 条 ≈ ¥0.15),脚本内置 ¥5 硬上限 |
+| 成本 | API 按量计费 + 配置 | 默认零;开刃模式按量。TikHub 不设人工请求/费用硬上限,以目标样本数、账户余额和平台限速为边界 |
 | 平台覆盖 | 接了哪个平台算哪个 | 料能喂进来的都行 |
 | 证据链 | 统计为主 | 每条结论挂样本编号+原文引用 |
 | 产出 | 拆解报告 | 打法谱 + **可安装的教练 Skill** + 试刀盲评 |
-| 合规面 | 依赖采集方条款 | 不采集,只研究你提供的公开内容 |
+| 合规面 | 依赖采集方条款 | 默认只研究你提供的公开内容;开刃模式只采用户指定账号的公开内容并遵守供应商条款 |
 
 ## 开刃模式(可选)
 
-默认路径永远零 API。但如果你本来就持有 TikHub 或 SocialData 的 key,可以给庖丁「开刃」——自动采集互动数全量和评论区(认知层拆解的重要料):
+默认路径永远零 API。但如果你本来就持有 TikHub 或 SocialData 的 key,可以给庖丁「开刃」——自动采集正文、互动数、评论区,并可为视频生成本地 Whisper 逐字稿:
 
 ```bash
 mkdir -p ~/.config/paoding
@@ -98,13 +98,23 @@ chmod 600 ~/.config/paoding/keys.env
 TikHub(api.tikhub.io)管小红书/抖音,SocialData(socialdata.tools)管 X,两个 key 配一个也行。配好后庖丁收料时会自动检测并询问是否用 API 采集;也可手动跑:
 
 ```bash
-python3 skills/paoding/scripts/collect_api.py --platform xhs --user "博主名" --count 10 --outdir ./paoding-collect
+# 元数据 + 正文 + 互动数 + 高赞评论
+python3 skills/paoding/scripts/collect_api.py \
+  --platform xhs --user "博主名" --count 50 --outdir ./paoding-collect
+
+# 视频再补本地 Whisper 逐字稿(已验证的完整链路)
+python3 skills/paoding/scripts/collect_api.py \
+  --platform xhs --user "博主名" --count 50 --outdir ./paoding-collect \
+  --transcript --whisper-model small
 ```
 
-- 费用量级:约 $0.002/请求,一条样本约 2 次请求(详情+评论),采 10 条 ≈ ¥0.15;
-- 脚本每次采集前查余额、打印预估费用并要求确认;`--yes` 跳过交互确认(自动化场景用);
-- 内置单次运行 ¥5 硬上限,超限自动停手,已采样本保留;
-- key 只住在本地 keys.env(600 权限),不进产物、不进日志。没配 key?一切照旧,零 API 路径不受任何影响。
+- TikHub 按目标样本量持续调用,不设固定请求次数或费用硬上限;`--count` 可取任意正整数,它限制的是收料范围,不是 API 调用预算;
+- 小红书视频详情兼容 App V2 的 `video_info_v2.media.stream.h264[].master_url`,拿到视频后用本地 Whisper 转写,不调用云端转写 API;
+- 每次运行先查余额并打印费用估算;默认要求确认,`--yes` 可跳过。请求自动限速、429/5xx 有限重试,但不会无限重试;
+- 每条样本立即落盘,同目录重跑会按笔记 ID + 内容指纹断点去重;余额耗尽或网络中断后可原命令继续;
+- 每条目录包含 `meta.json`、`content.txt`、`comments.txt`,视频转写成功时再有 `transcript.txt`;根目录有 `profile.json` 和 `collection.json`;
+- key 只住在环境变量或本地 `keys.env`(600 权限),不进产物、不进日志。没配 key 时零 API 路径不受影响。
+- 已经用过 Blogger Distiller 时,庖丁也会兼容读取 `~/.xiaohongshu/tikhub_config.json` 中现有的 TikHub token,无需复制密钥。
 
 ## 触发方式
 
@@ -116,7 +126,7 @@ python3 skills/paoding/scripts/collect_api.py --platform xhs --user "博主名" 
 
 ## 安全边界
 
-- 不爬需要登录的内容,不绕平台风控,不调用任何采集 API;
+- 默认路径不爬需要登录的内容、不绕平台风控;开刃模式只在用户提供 key 并确认后调用 TikHub/SocialData,不模拟登录、不绕过供应商限速;
 - 蒸馏的是打法不是身份——生成的教练 Skill 写明不冒充博主本人,产出不复制原文整段(引用 ≤30 字);
 - 拆在世真人且产出要公开传播时,会提醒姓名权/形象权风险并建议匿名化;
 - 生成的教练 Skill 要发布到公开渠道前,会停手等你授权。
